@@ -26,7 +26,7 @@ class dataset(Dataset):
         img = img/255
         tag = float(tag)
         tag = torch.tensor(tag)
-        tag = tag.to(torch.int64)
+        tag = tag.to(torch.int64) # tag转tensor.int类型
         return np.float32(img),tag
 
 

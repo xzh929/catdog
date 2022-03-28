@@ -2,36 +2,38 @@ from torch import nn
 import torch
 
 
+# 定义残差网络块
 class Res_net(nn.Module):
-    def __init__(self,channel):
+    def __init__(self, channel):
         super(Res_net, self).__init__()
         self.res_net = nn.Sequential(
-            nn.Conv2d(channel,channel,3,1,padding=1,bias=False),
-            nn.BatchNorm2d(channel),
+            nn.Conv2d(channel, channel, 3, 1, padding=1, bias=False),
+            nn.BatchNorm2d(channel),  # 添加BN层，对数据做批归一化处理，参数为通道数，需要设置bias=False
             nn.Dropout2d(0.2),
             nn.ReLU(),
-            nn.Conv2d(channel, channel, 3, 1,padding=1,bias=False),
+            nn.Conv2d(channel, channel, 3, 1, padding=1, bias=False),
             nn.BatchNorm2d(channel),
             nn.ReLU()
         )
-        
-    def forward(self,input_x):
-        return self.res_net(input_x)+input_x
+
+    def forward(self, input_x):
+        return self.res_net(input_x) + input_x  # 残差网络：输入加上输出，形状相同需要加上padding
 
 
+# 定义池化层
 class Pool(nn.Module):
-    def __init__(self,chan_in,chan_out):
+    def __init__(self, chan_in, chan_out):
         super(Pool, self).__init__()
         self.pool = nn.Sequential(
-            nn.Conv2d(chan_in,chan_out,3,1,padding=1,bias=False),
-            nn.MaxPool2d(2),
+            nn.Conv2d(chan_in, chan_out, 3, 1, padding=1, bias=False),
+            nn.MaxPool2d(2),  # 采用最大池化的方式，池化窗口设置为2
             nn.ReLU(),
-            nn.Conv2d(chan_out,chan_out,3,1,padding=1,bias=False),
+            nn.Conv2d(chan_out, chan_out, 3, 1, padding=1, bias=False),
             nn.BatchNorm2d(chan_out),
             nn.ReLU()
         )
 
-    def forward(self,input_x):
+    def forward(self, input_x):
         return self.pool(input_x)
 
 
@@ -39,7 +41,7 @@ class CNN_net(nn.Module):
     def __init__(self):
         super(CNN_net, self).__init__()
         self.net = nn.Sequential(
-            nn.Conv2d(3,16,3,1),
+            nn.Conv2d(3, 16, 3, 1),
             nn.MaxPool2d(2),
             nn.ReLU(),
             Res_net(16),
@@ -57,7 +59,7 @@ class CNN_net(nn.Module):
             Res_net(64),
             Res_net(64),
 
-            Pool(64,128),
+            Pool(64, 128),
             Res_net(128),
             Res_net(128),
             Res_net(128),
@@ -65,12 +67,12 @@ class CNN_net(nn.Module):
             Res_net(128)
         )
         self.out_net = nn.Sequential(
-            nn.Linear(128*6*6, 2)
+            nn.Linear(128 * 6 * 6, 2)
         )
 
-    def forward(self,input_x):
+    def forward(self, input_x):
         cnn_out = self.net(input_x)
-        cnn_out = cnn_out.reshape(-1,128*6*6)
+        cnn_out = cnn_out.reshape(-1, 128 * 6 * 6)
         out = self.out_net(cnn_out)
         return out
 
@@ -79,14 +81,16 @@ class Test_net(nn.Module):
     def __init__(self):
         super(Test_net, self).__init__()
         self.test_net = nn.Sequential(
-            nn.Conv2d(3,16,3,1),
+            nn.Conv2d(3, 16, 3, 1),
             nn.MaxPool2d(2)
         )
-    def forward(self,x):
+
+    def forward(self, x):
         return self.test_net(x)
 
+
 if __name__ == '__main__':
-    a = torch.randn(1,3,100,100)
+    a = torch.randn(1, 3, 100, 100)
     net = CNN_net()
     # test_net = Test_net()
     out1 = net(a)

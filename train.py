@@ -33,7 +33,7 @@ class Train:
                 imgs = imgs.to(DEVICE)
                 tags = tags.to(DEVICE)
                 train_out = self.net(imgs)
-                tags = one_hot(tags, 2)
+                tags = one_hot(tags, 2) # tags转one-hot处理，loss_fun不自己转one-hot,且只接收float类型
                 tags = tags.to(torch.float32)
                 train_loss = self.loss_fun(train_out,tags)
 
@@ -65,7 +65,7 @@ class Train:
             avg_score = sum_score/len(self.test_loader)
             self.summary.add_scalars("loss",{"train_loss":avg_train_loss,"test_loss":avg_test_loss},epoch)
             self.summary.add_scalar("score",avg_score,epoch)
-            torch.save(self.net.state_dict(),f"checkpoint/{epoch}.t")
+            torch.save(self.net.state_dict(),f"checkpoint/{epoch}.t")   # 保存模型参数
             print("epoch:",epoch,"test_loss:",avg_test_loss,"score:",avg_score)
 
 if __name__ == '__main__':
